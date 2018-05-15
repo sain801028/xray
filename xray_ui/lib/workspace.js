@@ -4,6 +4,7 @@ const ReactDOM = require("react-dom");
 const { styled } = require("styletron-react");
 const Modal = require("./modal");
 const View = require("./view");
+const { ActionContext, Action } = require("./keymap");
 const $ = React.createElement;
 const VerticalToolbar = require("./vertical_toolbar");
 
@@ -45,7 +46,6 @@ const BackgroundTip = styled("div", {
 class Workspace extends React.Component {
   constructor() {
     super();
-    this.didKeyDown = this.didKeyDown.bind(this);
     this.toggleDiscussion = this.toggleDiscussion.bind(this);
   }
 
@@ -70,27 +70,22 @@ class Workspace extends React.Component {
     return $(
       Root,
       {
-        tabIndex: -1,
-        onKeyDownCapture: this.didKeyDown
+        tabIndex: -1
       },
-      $(VerticalToolbar, { onToggleDiscussion: this.toggleDiscussion }),
-      leftPanel,
-      $(Pane, null, $(PaneInner, null, centerItem)),
-      modal
+      $(
+        ActionContext,
+        { context: "Workspace" },
+        $(Action, { type: "ToggleFileFinder", dispatch: this.props.dispatch }),
+        $(VerticalToolbar, { onToggleDiscussion: this.toggleDiscussion }),
+        leftPanel,
+        $(Pane, null, $(PaneInner, null, centerItem)),
+        modal
+      )
     );
   }
 
   componentDidMount() {
     ReactDOM.findDOMNode(this).focus();
-  }
-
-  didKeyDown(event) {
-    if (event.metaKey || event.ctrlKey) {
-      if (event.key === "t") {
-        this.props.dispatch({ type: "ToggleFileFinder" });
-        event.stopPropagation();
-      }
-    }
   }
 
   toggleDiscussion() {
